@@ -65,9 +65,6 @@
     <Image Include="res\MFCApplication1.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="C:\Users\IanBa\Downloads\1928841-blue-lobstera-rare-cotton-candy-lobster.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="1928841-blue-lobstera-rare-cotton-candy-lobster.bmp">
       <Filter>Resource Files</Filter>
     </Image>

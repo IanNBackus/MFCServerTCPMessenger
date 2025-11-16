@@ -32,16 +32,16 @@ void CMFCApplication1Dlg::DoDataExchange(CDataExchange* pDX)
 
 	//link up message data
 	DDX_Text(pDX, Message_Edit, _messageEdit);
-	DDX_Control(pDX, Message_List, _messageListControl);
 	DDX_Text(pDX, IP_Edit, _ip);
 	DDX_Text(pDX, Port_Edit, _port);
+	DDX_Control(pDX, Message_List, _messageListControl);
 }
 
 BEGIN_MESSAGE_MAP(CMFCApplication1Dlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_NewButton, &CMFCApplication1Dlg::OnSendClicked)
-	ON_BN_CLICKED(IDC_BUTTON1, &CMFCApplication1Dlg::OnConnectClicked)
+	ON_BN_CLICKED(Send_Button, &CMFCApplication1Dlg::OnSendClicked)
+	ON_BN_CLICKED(Connect_Button, &CMFCApplication1Dlg::OnConnectClicked)
 END_MESSAGE_MAP()
 
 
@@ -107,8 +107,6 @@ HCURSOR CMFCApplication1Dlg::OnQueryDragIcon()
 void CMFCApplication1Dlg::OnSendClicked()
 {
 	// TODO: Add your control notification handler code here
-
-	
 
 }
 

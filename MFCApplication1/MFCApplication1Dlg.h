@@ -9,40 +9,46 @@
 // CMFCApplication1Dlg dialog
 class CMFCApplication1Dlg : public CDialogEx
 {
-// Construction
-public:
-	CMFCApplication1Dlg(CWnd* pParent = nullptr);	// standard constructor
+	public:
 
-// Dialog Data
-#ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_MFCAPPLICATION1_DIALOG };
-#endif
+		// Construction
+		CMFCApplication1Dlg(CWnd* pParent = nullptr);	// standard constructor
+
+		//afx messages from UI controls
+		afx_msg void OnConnectClicked();
+		afx_msg void OnSendClicked();
+
+		// Dialog Data
+		#ifdef AFX_DESIGN_TIME
+			enum { IDD = IDD_MFCAPPLICATION1_DIALOG };
+		#endif
 
 	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
+		HICON m_hIcon;
 
-// Implementation
-protected:
-	HICON m_hIcon;
+		virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
-	// Generated message map functions
-	virtual BOOL OnInitDialog();
-	afx_msg void OnPaint();
-	afx_msg HCURSOR OnQueryDragIcon();
-	DECLARE_MESSAGE_MAP()
-private:
-	CString _messageEdit;
-public:
-	afx_msg void OnSendClicked();
-private:
-	CListBox _messageListControl;
-	CString _ip;
-	CString _port;
+		// Generated message map functions
+		virtual BOOL OnInitDialog();
+		afx_msg void OnPaint();
+		afx_msg HCURSOR OnQueryDragIcon();
 
-	//client socket class
-	ClientSocketController clientController;
+		//event handlers for the clientsocketcontroller class to send to
+		afx_msg LRESULT OnSocketControllerConnect(WPARAM wParam, LPARAM lParam);
+		afx_msg LRESULT OnSocketControllerReceive(WPARAM wParam, LPARAM lParam);
 
-public:
-	afx_msg void OnConnectClicked();
+		DECLARE_MESSAGE_MAP()
+
+	private:
+
+		//UI controls
+		CString _messageEdit;
+		CString _ip;
+		CString _port;
+		CListBox _messageListControl;
+
+		//client socket class
+		ClientSocketController _clientController;
+
 };

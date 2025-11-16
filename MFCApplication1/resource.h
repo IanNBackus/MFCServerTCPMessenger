@@ -4,12 +4,14 @@
 //
 #define IDD_MFCAPPLICATION1_DIALOG      102
 #define IDR_MAINFRAME                   128
-#define IDB_BITMAP1                     134
 #define LOBSTERBITMAP                   134
 #define IDC_NewButton                   1000
+#define Message_Send                    1000
+#define Send_Button                     1000
 #define Message_List                    1001
 #define Message_Edit                    1004
 #define IDC_BUTTON1                     1005
+#define Connect_Button                  1005
 #define Port_Edit                       1007
 #define IP_Edit                         1008
 #define Message_Window_Title            1012
