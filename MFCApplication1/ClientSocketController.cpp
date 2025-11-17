@@ -4,16 +4,17 @@
 
 ClientSocketController::ClientSocketController()
 {
-	TRACE("\n\nIn parameterless Constructor for ClientSocketController\n\n");
+	TRACE("\nIn parameterless Constructor for ClientSocketController\n");
 
-	//we'll set this in the dialog class
-	m_Hwnd = nullptr;
+	//we'll manipulate these in the dialog class
+	Hwnd = nullptr;
+	IsConnected = false;
 }
 
 ClientSocketController::~ClientSocketController()
 {
 	//worlds emptiest destructor
-	TRACE("\n\nDestructing ClientSocketController\n\n");
+	TRACE("\nDestructing ClientSocketController\n");
 }
 
 
@@ -21,10 +22,10 @@ void ClientSocketController::OnAccept(int nErrorCode)
 {
 
 	//check if the window reference is acceptable
-	if (::IsWindow(m_Hwnd))
+	if (::IsWindow(Hwnd))
 	{
 		//send message (event) to the window
-		::PostMessage(m_Hwnd, WM_MYSOCKET_ONACCEPT, (WPARAM)nErrorCode, 0);
+		::PostMessage(Hwnd, WM_CLIENTSOCKETCNTROLLER_ONACCEPT, (WPARAM)nErrorCode, 0);
 	}
 
 	CAsyncSocket::OnAccept(nErrorCode);
@@ -36,10 +37,10 @@ void ClientSocketController::OnConnect(int nErrorCode)
 {
 
 	//check if the window reference is acceptable
-	if (::IsWindow(m_Hwnd))
+	if (::IsWindow(Hwnd))
 	{
 		//send message (event) to the window
-		::PostMessage(m_Hwnd, WM_MYSOCKET_ONCONNECT, (WPARAM)nErrorCode, 0);
+		::PostMessage(Hwnd, WM_CLIENTSOCKETCNTROLLER_ONCONNECT, (WPARAM)nErrorCode, 0);
 	}
 
 	CAsyncSocket::OnConnect(nErrorCode);
@@ -51,10 +52,10 @@ void ClientSocketController::OnReceive(int nErrorCode)
 {
 
 	//check if the window reference is acceptable
-	if (::IsWindow(m_Hwnd))
+	if (::IsWindow(Hwnd))
 	{
 		//send message (event) to the window
-		::PostMessage(m_Hwnd, WM_MYSOCKET_ONRECEIVE, (WPARAM)nErrorCode, 0);
+		::PostMessage(Hwnd, WM_CLIENTSOCKETCNTROLLER_ONRECEIVE, (WPARAM)nErrorCode, 0);
 	}
 
 	CAsyncSocket::OnReceive(nErrorCode);
@@ -66,10 +67,10 @@ void ClientSocketController::OnClose(int nErrorCode)
 {
 
 	//check if the window reference is acceptable
-	if (::IsWindow(m_Hwnd))
+	if (::IsWindow(Hwnd))
 	{
 		//send message (event) to the window
-		::PostMessage(m_Hwnd, WM_MYSOCKET_ONCLOSE, (WPARAM)nErrorCode, 0);
+		::PostMessage(Hwnd, WM_CLIENTSOCKETCNTROLLER_ONCLOSE, (WPARAM)nErrorCode, 0);
 	}
 
 	CAsyncSocket::OnClose(nErrorCode);

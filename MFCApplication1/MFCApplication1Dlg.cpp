@@ -14,9 +14,6 @@
 
 
 // CMFCApplication1Dlg dialog
-
-
-
 CMFCApplication1Dlg::CMFCApplication1Dlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_MFCAPPLICATION1_DIALOG, pParent)
 	, _messageEdit(_T(""))
@@ -37,11 +34,21 @@ void CMFCApplication1Dlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, Message_List, _messageListControl);
 }
 
+//mfc message mapping (event to eventhandler hookups)
 BEGIN_MESSAGE_MAP(CMFCApplication1Dlg, CDialogEx)
+
+	//messages implemented by default template
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+
+	//messages from ui controls
 	ON_BN_CLICKED(Send_Button, &CMFCApplication1Dlg::OnSendClicked)
 	ON_BN_CLICKED(Connect_Button, &CMFCApplication1Dlg::OnConnectClicked)
+
+	//messages from clientsocketcontroller class
+	ON_MESSAGE(WM_CLIENTSOCKETCNTROLLER_ONCONNECT, OnClientSocketControllerDisconnect)
+	ON_MESSAGE(WM_CLIENTSOCKETCNTROLLER_ONCONNECT, OnClientSocketControllerReceive)
+
 END_MESSAGE_MAP()
 
 
@@ -57,6 +64,9 @@ BOOL CMFCApplication1Dlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	_clientController.Hwnd = m_hWnd;
+
+	UpdateMessageList(_T("Welcome Client, no connection currently established."));
 
 	//set bold title fonts
 	CFont m_font;
@@ -103,14 +113,98 @@ HCURSOR CMFCApplication1Dlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
+//Respond to a message send button clicked event from the ui
 void CMFCApplication1Dlg::OnSendClicked()
 {
-	// TODO: Add your control notification handler code here
+	
+	//verify the connection prior to making a send attempt
+	if (!_clientController.IsConnected) {
+		UpdateMessageList(_T("Connection must be made prior to sending..."));
+		return;
+	}
+
+	//send attempt
+	
+	//convert CString from UI into a format acceptable by CAsyncSocket.Send(), in this case a const char*
+	CT2A stringConverter(_messageEdit);
+	char* convertedTextData = stringConverter;
+
+	//_clientController.Send(convertedTextData, (int)strlen(convertedTextData));
+	_clientController.Send(CT2A(_messageEdit), strlen(CT2A(_messageEdit)));
+
+	UpdateMessageList(_T("Me: ") + _messageEdit);
+
+	return;
 
 }
 
+//Respond to a connect button clicked event from the ui
 void CMFCApplication1Dlg::OnConnectClicked()
 {
-	// TODO: Add your control notification handler code here
+	
+	//don't allow double connection
+	if (_clientController.IsConnected) {
+		UpdateMessageList(_T("Connection already made..."));
+		return;
+	}
+
+	//
+	if (_clientController.Create())
+	{
+		CString thing = _T("Bruh");
+		thing = thing + _T("Bruh");
+
+		UpdateMessageList(_T("Bruh") + _T("Bruh"));
+
+		// Initiate a connection to the device
+		m_MySocket.Connect(AddressToConnectTo, PortToConnectTo);
+
+		//keep track of connection
+		_clientController.IsConnected = true;
+
+		return;
+
+	}
+	else
+	{
+
+		UpdateMessageList(_T("Socket creation failed"));
+
+		return;
+
+	}
+
+}
+
+//Respond to a message receive event from the clientsocketcontroller class
+LRESULT CMFCApplication1Dlg::OnClientSocketControllerReceive(WPARAM, LPARAM)
+{
+
+
+
+	return 0;
+
+}
+
+//Respond to a disconnect event from the clientsocketcontroller class
+LRESULT CMFCApplication1Dlg::OnClientSocketControllerDisconnect(WPARAM, LPARAM)
+{
+
+
+
+	return 0;
+
+}
+
+//add a string of text to the 
+void CMFCApplication1Dlg::UpdateMessageList(CString textToAdd) {
+
+	//add new text to the list (will go to the bottom)
+	_messageListControl.AddString(textToAdd);
+
+	//push the new message up to the top of the list so old messages dissappear progressively
+	_messageListControl.SetTopIndex(_messageListControl.GetCount() - 1);
+
+	return;
+
 }

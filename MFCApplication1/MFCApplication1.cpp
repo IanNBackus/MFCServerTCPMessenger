@@ -55,7 +55,6 @@ BOOL CMFCApplication1App::InitInstance()
 
 	CWinApp::InitInstance();
 
-
 	AfxEnableControlContainer();
 
 	// Create the shell manager, in case the dialog contains
@@ -73,6 +72,12 @@ BOOL CMFCApplication1App::InitInstance()
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
 	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+
+	//exit of the initialization of the afx socket fails
+	if (!AfxSocketInit())
+	{
+		return FALSE;
+	}
 
 	CMFCApplication1Dlg dlg;
 	m_pMainWnd = &dlg;

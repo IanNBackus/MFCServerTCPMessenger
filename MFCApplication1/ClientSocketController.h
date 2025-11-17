@@ -2,12 +2,12 @@
 #include <afxsock.h>
 
 //define messages particular to this class so our dialog can hook up to them
-#define WM_MYSOCKET_ONACCEPT	(WM_USER + 1)
-#define WM_MYSOCKET_ONCONNECT	(WM_USER + 2)
-#define WM_MYSOCKET_ONRECEIVE	(WM_USER + 3)
-#define WM_MYSOCKET_ONCLOSE		(WM_USER + 4)
+#define WM_CLIENTSOCKETCNTROLLER_ONACCEPT	(WM_USER + 1)
+#define WM_CLIENTSOCKETCNTROLLER_ONCONNECT	(WM_USER + 2)
+#define WM_CLIENTSOCKETCNTROLLER_ONRECEIVE	(WM_USER + 3)
+#define WM_CLIENTSOCKETCNTROLLER_ONCLOSE	(WM_USER + 4)
 
-class ClientSocketController : CAsyncSocket
+class ClientSocketController : public CAsyncSocket
 {
 
 	public:
@@ -17,7 +17,8 @@ class ClientSocketController : CAsyncSocket
 		virtual ~ClientSocketController();
 
 		//variables
-		HWND m_Hwnd;
+		HWND Hwnd;
+		bool IsConnected;
 
 		//methods
 		virtual void OnAccept(int nErrorCode);

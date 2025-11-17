@@ -18,6 +18,9 @@ class CMFCApplication1Dlg : public CDialogEx
 		afx_msg void OnConnectClicked();
 		afx_msg void OnSendClicked();
 
+		//methods
+		void UpdateMessageList(CString messageToAdd);
+
 		// Dialog Data
 		#ifdef AFX_DESIGN_TIME
 			enum { IDD = IDD_MFCAPPLICATION1_DIALOG };
@@ -35,8 +38,8 @@ class CMFCApplication1Dlg : public CDialogEx
 		afx_msg HCURSOR OnQueryDragIcon();
 
 		//event handlers for the clientsocketcontroller class to send to
-		afx_msg LRESULT OnSocketControllerConnect(WPARAM wParam, LPARAM lParam);
-		afx_msg LRESULT OnSocketControllerReceive(WPARAM wParam, LPARAM lParam);
+		afx_msg LRESULT OnClientSocketControllerDisconnect(WPARAM wParam, LPARAM lParam);
+		afx_msg LRESULT OnClientSocketControllerReceive(WPARAM wParam, LPARAM lParam);
 
 		DECLARE_MESSAGE_MAP()
 
