@@ -116,7 +116,10 @@ HCURSOR CMFCApplication1Dlg::OnQueryDragIcon()
 //Respond to a message send button clicked event from the ui
 void CMFCApplication1Dlg::OnSendClicked()
 {
-	
+
+	//perform data exchange
+	UpdateData(TRUE);
+
 	//verify the connection prior to making a send attempt
 	if (!_clientController.IsConnected) {
 		UpdateMessageList(_T("Connection must be made prior to sending..."));
@@ -130,7 +133,7 @@ void CMFCApplication1Dlg::OnSendClicked()
 	char* convertedTextData = stringConverter;
 
 	//_clientController.Send(convertedTextData, (int)strlen(convertedTextData));
-	_clientController.Send(CT2A(_messageEdit), strlen(CT2A(_messageEdit)));
+	//_clientController.Send(CT2A(_messageEdit), strlen(CT2A(_messageEdit)));
 
 	UpdateMessageList(_T("Me: ") + _messageEdit);
 
@@ -142,22 +145,43 @@ void CMFCApplication1Dlg::OnSendClicked()
 void CMFCApplication1Dlg::OnConnectClicked()
 {
 	
+	//perform data exchange
+	UpdateData(TRUE);
+
 	//don't allow double connection
 	if (_clientController.IsConnected) {
 		UpdateMessageList(_T("Connection already made..."));
 		return;
 	}
 
-	//
+	//check for successful client creation
 	if (_clientController.Create())
 	{
-		CString thing = _T("Bruh");
-		thing = thing + _T("Bruh");
+		CString notification;
 
-		UpdateMessageList(_T("Bruh") + _T("Bruh"));
+		UINT localPort = 0;
+		CString localIp;
+
+		//inform user of local network credentials
+		_clientController.GetSockName(localIp, localPort);
+		notification.Format(_T("Local IP: %s, Port: %u"), (LPCTSTR)localIp, localPort);
+		UpdateMessageList(notification);
+
+		//convert the string port to a UINT
+		errno = 0;
+		TCHAR* end;
+		UINT portConversion = _tcstoul(_port, &end, 10);
+
+		//check for valid conversion to UINT
+		if ((errno != 0) || (end == _port)) {
+			UpdateMessageList(_T("Entered port was invalid"));
+			return;
+		}
 
 		// Initiate a connection to the device
-		m_MySocket.Connect(AddressToConnectTo, PortToConnectTo);
+		//_clientController.Connect(_ip, portConversion);
+		notification.Format(_T("Connecting to IP: %s, Port: %s"), (LPCTSTR)_ip, (LPCTSTR)_port);
+		UpdateMessageList(notification);
 
 		//keep track of connection
 		_clientController.IsConnected = true;
@@ -202,7 +226,7 @@ void CMFCApplication1Dlg::UpdateMessageList(CString textToAdd) {
 	//add new text to the list (will go to the bottom)
 	_messageListControl.AddString(textToAdd);
 
-	//push the new message up to the top of the list so old messages dissappear progressively
+	//move the scroll bar to keep the new messages visible
 	_messageListControl.SetTopIndex(_messageListControl.GetCount() - 1);
 
 	return;

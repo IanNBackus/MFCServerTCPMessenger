@@ -6,7 +6,6 @@
 #define IDR_MAINFRAME                   128
 #define LOBSTERBITMAP                   134
 #define IDC_NewButton                   1000
-#define Message_Send                    1000
 #define Send_Button                     1000
 #define Message_List                    1001
 #define Message_Edit                    1004
@@ -17,6 +16,7 @@
 #define Message_Window_Title            1012
 #define Parameters_Title                1013
 #define Friend_Title                    1014
+#define IDC_EDIT1                       1016
 
 // Next default values for new objects
 // 
@@ -24,7 +24,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1015
+#define _APS_NEXT_CONTROL_VALUE         1017
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
