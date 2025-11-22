@@ -43,11 +43,12 @@ BEGIN_MESSAGE_MAP(CMFCApplication1Dlg, CDialogEx)
 
 	//messages from ui controls
 	ON_BN_CLICKED(Send_Button, &CMFCApplication1Dlg::OnSendClicked)
-	ON_BN_CLICKED(Connect_Button, &CMFCApplication1Dlg::OnConnectClicked)
+	ON_BN_CLICKED(Connect_Button, &CMFCApplication1Dlg::OnOpenClicked)
 
-	//messages from clientsocketcontroller class
-	ON_MESSAGE(WM_CLIENTSOCKETCNTROLLER_ONCONNECT, OnClientSocketControllerDisconnect)
-	ON_MESSAGE(WM_CLIENTSOCKETCNTROLLER_ONCONNECT, OnClientSocketControllerReceive)
+	//messages from socketcontroller class
+	ON_MESSAGE(WM_SOCKETCONTROLLER_ONCLOSE, OnSocketControllerDisconnect)
+	ON_MESSAGE(WM_SOCKETCONTROLLER_ONRECEIVE, OnSocketControllerReceive)
+	ON_MESSAGE(WM_SOCKETCONTROLLER_ONACCEPT, OnSocketControllerAccept)
 
 END_MESSAGE_MAP()
 
@@ -65,8 +66,9 @@ BOOL CMFCApplication1Dlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	_clientController.Hwnd = m_hWnd;
+	_listenerController.Hwnd = m_hWnd;
 
-	UpdateMessageList(_T("Welcome Client"));
+	UpdateMessageList(_T("Welcome Server"));
 
 	//set bold title fonts
 	CFont m_font;
@@ -113,6 +115,19 @@ HCURSOR CMFCApplication1Dlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+//add a string of text to the 
+void CMFCApplication1Dlg::UpdateMessageList(CString textToAdd) {
+
+	//add new text to the list (will go to the bottom)
+	_messageListControl.AddString(textToAdd);
+
+	//move the scroll bar to keep the new messages visible
+	_messageListControl.SetTopIndex(_messageListControl.GetCount() - 1);
+
+	return;
+
+}
+
 //Respond to a message send button clicked event from the ui
 void CMFCApplication1Dlg::OnSendClicked()
 {
@@ -142,68 +157,70 @@ void CMFCApplication1Dlg::OnSendClicked()
 }
 
 //Respond to a connect button clicked event from the ui
-void CMFCApplication1Dlg::OnConnectClicked()
+void CMFCApplication1Dlg::OnOpenClicked()
 {
 	
 	//perform data exchange
 	UpdateData(TRUE);
 
-	//don't allow double connection
-	if (_clientController.IsConnected) {
-		UpdateMessageList(_T("Connection already initiated..."));
-		return;
-	}
-
-	//check for successful client creation
-	if (_clientController.Create())
-	{
-		CString notification;
-
-		UINT localPort = 0;
-		CString localIp;
-
-		//inform user of local network credentials
-		_clientController.GetSockName(localIp, localPort);
-		notification.Format(_T("Local IP: %s, Port: %u"), (LPCTSTR)localIp, localPort);
-		UpdateMessageList(notification);
-
-		//convert the string port to a UINT
-		errno = 0;
-		TCHAR* end;
-		UINT portConversion = _tcstoul(_port, &end, 10);
-
-		//check for valid conversion to UINT
-		if ((errno != 0) || (end == _port)) {
-			UpdateMessageList(_T("Entered port was invalid..."));
-			return;
-		}
-
-		// Initiate a connection to the device
-		_clientController.Connect(_ip, portConversion);
-
-		//update ui
-		notification.Format(_T("Connecting to IP: %s, Port: %s"), (LPCTSTR)_ip, (LPCTSTR)_port);
-		UpdateMessageList(notification);
-
-		//keep track of connection attempt
-		_clientController.IsConnected = true;
-
-		return;
-
-	}
-	else
+	//don't allow double open
+	if (_listenerController.IsListening) 
 	{
 
-		UpdateMessageList(_T("Socket creation failed..."));
-
+		UpdateMessageList(_T("Server is already listening..."));
 		return;
 
 	}
+
+	//perform conversion of requested port to UINT
+	errno = 0;
+	TCHAR* end;
+	UINT portConversion = _tcstoul(_port, &end, 10);
+
+	//check for valid conversion to UINT
+	if ((errno != 0) || (end == _port)) 
+	{
+
+		UpdateMessageList(_T("Entered port was invalid..."));
+		return;
+
+	}
+
+	//attempt to open the listener on this port
+	if (!_listenerController.Create(portConversion, SOCK_STREAM, 63L, _ip))
+	{
+		
+		UpdateMessageList(_T("Server socket creation failed..."));
+		return;
+
+	}
+
+	//start listening on the created socket
+	if (!_listenerController.Listen(1))
+	{
+
+		UpdateMessageList(_T("Server failed to listen..."));
+		return;
+
+	}
+
+	//inform user of local network credentials
+	CString notification;
+	CString localIp;
+	UINT localPort = 0;
+	_listenerController.GetSockName(localIp, localPort);
+	notification.Format(_T("Listening on IP: %s, Port: %u"), (LPCTSTR)localIp, localPort);
+	UpdateMessageList(notification);
+
+	//keep track of connection attempt
+	_listenerController.IsListening = true;
+
+	return;
 
 }
 
 //Respond to a message receive event from the clientsocketcontroller class
-LRESULT CMFCApplication1Dlg::OnClientSocketControllerReceive(WPARAM, LPARAM)
+LRESULT CMFCApplication1Dlg::OnSocketControllerReceive(WPARAM, LPARAM)
 {
 
 	char transmissionBuffer[256] = {0};
@@ -212,45 +229,78 @@ LRESULT CMFCApplication1Dlg::OnClientSocketControllerReceive(WPARAM, LPARAM)
 	//pull data from socket leaving 1 btye for a null terminator
 	int transmissionLength = _clientController.Receive(transmissionBuffer, sizeof(transmissionBuffer) - 1);
 
-	//convert into CString, assuming there's indeed anything to convert
-	if (transmissionLength > 0){
+	//check if there's anything to convert
+	if (transmissionLength <= 0){
 
-		//add null terminator
-		transmissionBuffer[transmissionLength] = '\0';
-
-		//convert
-		convertedTransmission = transmissionBuffer;
-
-		//update ui
-		UpdateMessageList(_T("Server: %s", transmissionBuffer));
+		return 0;
 
 	}
+
+	//convert into CString
+	transmissionBuffer[transmissionLength] = '\0';
+	convertedTransmission = transmissionBuffer;
+
+	//update ui
+	UpdateMessageList(_T("Client: ") + convertedTransmission);
 
 	return 0;
 
 }
 
 //Respond to a disconnect event from the clientsocketcontroller class
-LRESULT CMFCApplication1Dlg::OnClientSocketControllerDisconnect(WPARAM, LPARAM)
+LRESULT CMFCApplication1Dlg::OnSocketControllerDisconnect(WPARAM, LPARAM)
 {
 
-	UpdateMessageList(_T("Server Closed..."));
+	if (!_clientController.IsConnected)
+	{
+		UpdateMessageList(_T("Cannot disconnect disconnected socket..."));
+		return 0;
+	}
 
+	UpdateMessageList(_T("Client disconnected..."));
+
+	_clientController.ShutDown(CAsyncSocket::both);
 	_clientController.Close();
+
+	_clientController.IsConnected = false;
 
 	return 0;
 
 }
 
-//add a string of text to the 
-void CMFCApplication1Dlg::UpdateMessageList(CString textToAdd) {
+//accept in the client
+LRESULT CMFCApplication1Dlg::OnSocketControllerAccept(WPARAM, LPARAM)
+{
 
-	//add new text to the list (will go to the bottom)
-	_messageListControl.AddString(textToAdd);
+	//check for existing connection
+	if (_clientController.IsConnected) {
 
-	//move the scroll bar to keep the new messages visible
-	_messageListControl.SetTopIndex(_messageListControl.GetCount() - 1);
+		UpdateMessageList(_T("Client connection attempt while busy..."));
+		return 0;
 
-	return;
+	}
 
+	UpdateMessageList(_T("Accepting..."));
+
+	//try to take in client socket
+	if (!_listenerController.Accept(_clientController))
+	{
+
+		UpdateMessageList(_T("Failed to accept incoming client..."));
+		return 0;
+
+	}
+
+	_clientController.IsConnected = true;
+
+	//notify server user of their new client
+	CString notification;
+	CString clientIp;
+	UINT clientPort = 0;
+	_clientController.GetPeerName(clientIp, clientPort);
+	notification.Format(_T("Connected to %s:%u"), (LPCTSTR)clientIp, clientPort);
+	UpdateMessageList(notification);
+
+	return 0;
+	
 }

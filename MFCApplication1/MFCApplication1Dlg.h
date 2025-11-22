@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ClientSocketController.h"
+#include "SocketController.h"
 
 // CMFCApplication1Dlg dialog
 class CMFCApplication1Dlg : public CDialogEx
@@ -15,7 +15,7 @@ class CMFCApplication1Dlg : public CDialogEx
 		CMFCApplication1Dlg(CWnd* pParent = nullptr);	// standard constructor
 
 		//afx messages from UI controls
-		afx_msg void OnConnectClicked();
+		afx_msg void OnOpenClicked();
 		afx_msg void OnSendClicked();
 
 		//methods
@@ -37,9 +37,10 @@ class CMFCApplication1Dlg : public CDialogEx
 		afx_msg void OnPaint();
 		afx_msg HCURSOR OnQueryDragIcon();
 
-		//event handlers for the clientsocketcontroller class to send to
-		afx_msg LRESULT OnClientSocketControllerDisconnect(WPARAM wParam, LPARAM lParam);
-		afx_msg LRESULT OnClientSocketControllerReceive(WPARAM wParam, LPARAM lParam);
+		//event (message) handlers for the SocketController class to send to
+		afx_msg LRESULT OnSocketControllerDisconnect(WPARAM wParam, LPARAM lParam);
+		afx_msg LRESULT OnSocketControllerReceive(WPARAM wParam, LPARAM lParam);
+		afx_msg LRESULT OnSocketControllerAccept(WPARAM wParam, LPARAM lParam);
 
 		DECLARE_MESSAGE_MAP()
 
@@ -52,6 +53,9 @@ class CMFCApplication1Dlg : public CDialogEx
 		CListBox _messageListControl;
 
 		//client socket class
-		ClientSocketController _clientController;
+		SocketController _clientController;
+		SocketController _listenerController;
+
+		
 
 };
